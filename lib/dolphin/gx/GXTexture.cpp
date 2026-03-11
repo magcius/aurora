@@ -96,16 +96,14 @@ void GXInitTexObjTlut(GXTexObj* obj_, u32 tlut) {
 
 void GXLoadTexObj(GXTexObj* obj_, GXTexMapID id) {
   auto* obj = reinterpret_cast<GXTexObj_*>(obj_);
-  if (!obj->ref) {
-    const auto it = g_gxState.copyTextures.find(obj->data);
-    if (it != g_gxState.copyTextures.end()) {
-      obj->ref = it->second;
-      obj->dataInvalidated = false;
-    } else {
-      const auto name = fmt::format("GXLoadTexObj_{}", obj->fmt);
-      obj->ref =
-          aurora::gfx::new_dynamic_texture_2d(obj->width, obj->height, u32(obj->maxLod) + 1, obj->fmt, name.c_str());
-    }
+  const auto it = g_gxState.copyTextures.find(obj->data);
+  if (it != g_gxState.copyTextures.end()) {
+    obj->ref = it->second;
+    obj->dataInvalidated = false;
+  } else if (!obj->ref) {
+    const auto name = fmt::format("GXLoadTexObj_{}", obj->fmt);
+    obj->ref =
+        aurora::gfx::new_dynamic_texture_2d(obj->width, obj->height, u32(obj->maxLod) + 1, obj->fmt, name.c_str());
   }
   if (obj->dataInvalidated) {
     aurora::gfx::write_texture(*obj->ref, {static_cast<const u8*>(obj->data), UINT32_MAX /* TODO */});
